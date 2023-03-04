@@ -22,7 +22,7 @@ class ES():
     E_ES_capcity 容量
     Charge_efficiency_ES 充电效率
     '''
-    def __init__(self,P_max,E_ES_min,E_ES_max,E_ES_capcity,Charge_efficiency_ES,E0_ES):
+    def __init__(self,P_max,E_ES_min,E_ES_max,E_ES_capcity,Charge_efficiency_ES,E0_ES,delta_t):
 
         self.P_max = P_max
         self.E_ES_min = E_ES_min
@@ -30,8 +30,102 @@ class ES():
         self.E_ES_capcity = E_ES_capcity
         self.Charge_efficiency_ES = Charge_efficiency_ES
         self.E_ES = E0_ES
+        self.delta_t = delta_t
 
         pass
+    
+
+    '''
+    input: a_ES ES的动作
+    output: P_ES_charge ES的充电功率
+    '''
+    def ES_Charge(self,a_ES):
+
+        P_ES_charge = min(a_ES*self.P_max ,(self.E_ES_max-self.E_ES)/(self.Charge_efficiency_ES * self.delta_t))
+        # 充电改变电量
+        self.E_ES = self.E_ES + self.delta_t * P_ES_charge * self.Charge_efficiency_ES
+
+        return P_ES_charge
+
+    '''
+    input: a_ES ES的动作
+    output: P_ES_charge ES的放电的功率(负的)
+    '''
+    def ES_Discharge(self,a_ES):
+        P_ES_discharge = max(a_ES*self.P_max ,(self.E_ES_min-self.E_ES)*self.Charge_efficiency_ES /( self.delta_t))
+
+        # 放电改变电量
+        self.E_ES = self.E_ES + self.delta_t * P_ES_discharge / self.Charge_efficiency_ES
+
+
+        return P_ES_discharge
+    
+
+class EV():
+    '''
+    EV_dep_arr 是一个list, list中包含(dep,arr,E_EV_com)时间
+     E_EV_com 对应的是每次通勤消耗的电量
+    '''
+    def __init__(self,P_max,E_EV_min,E_EV_max,E_EV_capcity,Charge_efficiency_EV,E0_EV,delta_t,EV_dep_arr_Ecom,):
+        self.P_max = P_max
+        delta_t
+        self.E_EV_min = E_EV_min
+        self.E_EV_max = E_EV_max
+        self.E_EV_capcity = E_EV_capcity
+        self.Charge_efficiency_EV = Charge_efficiency_EV
+        self.E_EV = E0_EV
+        self.delta_t = delta_t
+        self.EV_dep_arr_Ecom = EV_dep_arr_Ecom
+        
+    def EV_charge(self,a_EV,t):
+
+        A_EV = 1
+
+        # 如果在外面的话A_EV 为 0 表示不能充放电
+        for dep,arr,Ecom in self.EV_dep_arr_Ecom:
+            if t>=dep and t<= arr:
+                A_EV = 0 
+        
+        P_EV_charge =A_EV * (min(a_EV*self.P_max ,(self.E_EV_max-self.E_EV)/(self.Charge_efficiency_EV * self.delta_t)))
+
+        # 充电放电改变电量
+        self.E_EV = self.E_EV + self.delta_t * P_EV_charge *self.Charge_efficiency_EV
+
+        return P_EV_charge
+    
+    def EV_discharge(self,a_EV,t):
+        A_EV = 1
+         # 如果在外面的话A_EV 为 0 表示不能充放电
+        for dep,arr,Ecom in self.EV_dep_arr_Ecom:
+            if t>=dep and t<= arr:
+                A_EV = 0
+
+        P_EV_discharge =A_EV * max(a_EV*self.P_max ,(self.E_EV_min-self.E_EV)*self.Charge_efficiency_EV /( self.delta_t))
+
+        # 放电改变电量
+        self.E_EV = self.E_EV + self.delta_t * P_EV_discharge / self.Charge_efficiency_EV
+
+        return P_EV_discharge
+    
+    '''
+    通勤 在回来的时候减少电量 并且返回min(self.E_EV - Ecom,0), 表示惩罚
+    '''
+    def EV_commuting(self,t):
+        for dep,arr,Ecom in self.EV_dep_arr_Ecom:
+            # 如果汽车开回来，电量减少, 如果低于0，电量设置成0
+            if t == arr:
+                self.E_EV = max(0,self.E_EV - Ecom)
+
+
+        return min(self.E_EV - Ecom,0)
+
+        
+class SA():
+    def __init__(self,P_SA_cyc,delta_t,SA_tin_tter):
+        self.P_SA_cyc = P_SA_cyc
+        self.delta_t = delta_t
+        self.SA_tin_tter = SA_tin_tter
+
 
 class HVAC():
     """

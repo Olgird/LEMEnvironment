@@ -7,8 +7,7 @@ class Prosumer():
                  own_EV,EV_P_max,E_EV_min,E_EV_max,E_EV_capcity,Charge_efficiency_EV,E0_EV,EV_dep_arr_Ecom,
                  own_SA,P_SA_cyc,n_cyc,SA_tin_tter,
                  init_indoor_temerpature, outtemp, min_comfort_temperature, max_comfort_temperature, heat_capacity,
-                 heat_resistance, energy_efficiency, max_hvac_voltage,
-                 timestep):
+                 heat_resistance, energy_efficiency, max_hvac_voltage,):
         # 为了方便找到对应数据的地址，设置一个id
         self.id_prosumer = id_prosumer
 
@@ -22,23 +21,33 @@ class Prosumer():
 
         self.myHVAC = HVAC(init_indoor_temerpature, outtemp, min_comfort_temperature, max_comfort_temperature, heat_capacity,
                  heat_resistance, energy_efficiency, max_hvac_voltage,
-                 timestep)
+                 delta_t)
         
-    def do_actions(self,t,a_ES,a_EV,a_SA):
+
+        # 初始化 EMS
         
+        
+    def do_actions(self,t,inverter_ac_power_per_w,a_ES,a_EV,a_SA):
+        
+        # 定义多个功率
+        p_PV = 0
         p_ES = 0
         p_EV = 0
         p_SA = 0
+        p_HVAC = 0
 
-
+        # 做动作，得到每个部件的功率
+        p_PV = self.myPV(inverter_ac_power_per_w)
         p_ES = self.myES.ES_Charge(a_ES)
         p_EV = self.myEV.EV_charge(a_EV,t)
         p_SA = self.mySA.running_SA(t,a_SA)
+
+
         # 惩罚
         commuting_error = self.myEV.EV_commuting(t)
 
-
-        all_p = p_ES + p_EV + p_SA
+        # 计算单个prosumer的全部功率之和
+        all_p = p_PV + p_ES + p_EV + p_SA + p_HVAC
 
         return all_p,commuting_error
 

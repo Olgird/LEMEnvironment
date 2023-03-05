@@ -103,20 +103,6 @@ class EV():
 
             return P_EV_discharge * self.own_EV
     
-    # def EV_discharge(self,a_EV,t):
-    #     A_EV = 1
-    #      # 如果在外面的话A_EV 为 0 表示不能充放电
-    #     for dep,arr,Ecom in self.EV_dep_arr_Ecom:
-    #         if t>=dep and t<= arr:
-    #             A_EV = 0
-
-    #     P_EV_discharge =A_EV * max(a_EV*self.P_max ,(self.E_EV_min-self.E_EV)*self.Charge_efficiency_EV /( self.delta_t))
-
-    #     # 放电改变电量
-    #     self.E_EV = self.E_EV + self.delta_t * P_EV_discharge / self.Charge_efficiency_EV
-
-    #     return P_EV_discharge * self.own_EV
-    
     '''
     通勤 在回来的时候减少电量 并且返回min(self.E_EV - Ecom,0), 表示惩罚
     '''
@@ -191,8 +177,8 @@ class HVAC():
         max_hvac_voltage
     """
     def __init__(self, init_indoor_temerpature, outtemp, min_comfort_temperature, max_comfort_temperature, heat_capacity,
-                 heat_resistance, energy_efficiency, max_hvac_voltage,
-                 timestep
+                 heat_resistance, energy_efficiency, P_max_hvac,
+                 delta_t
                  ):
         self.init_indoor_temerpature = init_indoor_temerpature
         self.min_comfort_temperature = min_comfort_temperature
@@ -201,13 +187,14 @@ class HVAC():
         self.outtemp = outtemp
         self.heat_resistance = heat_resistance
         self.energy_efficiency = energy_efficiency
-        self.max_hvac_voltage = max_hvac_voltage
-        self.timestep = timestep
-        self.now_temperature = self.init_indoor_tempature
+        self.P_max_hvac = P_max_hvac
+        self.delta_t = delta_t
+        self.now_temperature = self.init_indoor_temerpature
     
-    def calculate(self):
+    def calculate(self,a_hvac):
+        # ####################################################################
         next_step_tempature = self.now_temperature - (self.now_temperature - self.outtemp + 
-        self.energy_efficiency * self.heat_resistance * self.heat_capacity) * self.timestep / (self.heat_capacity * self.heat_resistance)
+        self.energy_efficiency * self.heat_resistance * self.heat_capacity) * self.delta_t / (self.heat_capacity * self.heat_resistance)
         return next_step_tempature
     
     """

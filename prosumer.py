@@ -38,6 +38,11 @@ class Prosumer():
         commuting_error = self.myEV.EV_commuting(t)
 
 
+        all_p = p_ES + p_EV + p_SA
+
+        return all_p,commuting_error
+
+
 
         
 

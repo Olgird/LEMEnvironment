@@ -193,6 +193,7 @@ class HVAC():
     
     def calculate(self, a_hvac):
         # ####################################################################
+        self.energy_efficiency = a_hvac * self.max_comfort_temperature
         next_step_tempature = self.now_temperature - (self.now_temperature - self.outtemp + 
         self.energy_efficiency * self.heat_resistance * self.heat_capacity) * self.delta_t / (self.heat_capacity * self.heat_resistance)
         return next_step_tempature

@@ -64,7 +64,8 @@ class ES():
 class EV():
     '''
     EV_dep_arr 是一个list, list中包含(dep,arr,E_EV_com)时间
-     E_EV_com 对应的是每次通勤消耗的电量
+    E_EV_com 对应的是每次通勤消耗的电量
+    delta_t 为时间间隔
     '''
     def __init__(self,P_max,E_EV_min,E_EV_max,E_EV_capcity,Charge_efficiency_EV,E0_EV,delta_t,EV_dep_arr_Ecom,):
         self.P_max = P_max

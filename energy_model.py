@@ -177,7 +177,7 @@ class HVAC():
         max_hvac_voltage
     """
     def __init__(self, init_indoor_temerpature, outtemp, min_comfort_temperature, max_comfort_temperature, heat_capacity,
-                 heat_resistance, energy_efficiency, P_max_hvac,
+                 heat_resistance, a_hvac, P_max_hvac,
                  delta_t
                  ):
         self.init_indoor_temerpature = init_indoor_temerpature
@@ -186,12 +186,12 @@ class HVAC():
         self.heat_capacity = heat_capacity
         self.outtemp = outtemp
         self.heat_resistance = heat_resistance
-        self.energy_efficiency = energy_efficiency
+        self.energy_efficiency = a_hvac * max_comfort_temperature
         self.P_max_hvac = P_max_hvac
         self.delta_t = delta_t
         self.now_temperature = self.init_indoor_temerpature
     
-    def calculate(self,a_hvac):
+    def calculate(self, a_hvac):
         # ####################################################################
         next_step_tempature = self.now_temperature - (self.now_temperature - self.outtemp + 
         self.energy_efficiency * self.heat_resistance * self.heat_capacity) * self.delta_t / (self.heat_capacity * self.heat_resistance)

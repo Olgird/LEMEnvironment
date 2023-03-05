@@ -115,16 +115,53 @@ class EV():
             # 如果汽车开回来，电量减少, 如果低于0，电量设置成0
             if t == arr:
                 self.E_EV = max(0,self.E_EV - Ecom)
+            # 如果出勤不够电，那就返回惩罚
+            if t == dep:
+                return min(self.E_EV - Ecom,0)
+        
+        return 0
 
-
-        return min(self.E_EV - Ecom,0)
+        
+        
 
         
 class SA():
-    def __init__(self,P_SA_cyc,delta_t,SA_tin_tter):
+    def __init__(self,P_SA_cyc,n_cyc,delta_t,SA_tin_tter):
         self.P_SA_cyc = P_SA_cyc
         self.delta_t = delta_t
+
+        # 最早开始时间和最晚结束时间 [9,14) 不包括14点
         self.SA_tin_tter = SA_tin_tter
+        self.n_cyc = n_cyc
+
+        # 记录激活的时间
+        self.t_activate = -1
+
+    def running_SA(self,t,a_SA):
+        A_SA = 0
+
+        tin = self.SA_tin_tter[0]
+        tter = self.SA_tin_tter[1]
+
+        if t>=tin and t<=(tter - self.n_cyc):
+            A_SA = 1
+
+        # 如果还没有激活，并且a_SA ==1
+        if A_SA == 1 and a_SA == 1 and self.t_activate == -1:
+            self.t_activate = t
+
+        # 如果在截止时间到达还没激活，那就直接激活
+        if t==(tter - self.n_cyc) and self.t_activate == -1:
+            self.t_activate = t
+
+        # 运行，返回cyc中没段的功率
+        for i in range(self.n_cyc):
+            if t == (self.t_activate + i):
+                return self.P_SA_cyc[i]
+            
+
+
+    
 
 
 class HVAC():

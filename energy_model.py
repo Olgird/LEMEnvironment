@@ -177,8 +177,8 @@ class HVAC():
         max_hvac_voltage
     """
     def __init__(self, init_indoor_temerpature, outtemp, min_comfort_temperature, max_comfort_temperature, heat_capacity,
-                 heat_resistance, a_hvac, P_max_hvac,
-                 delta_t
+                 heat_resistance, a_hvac, max_hvac_voltage,
+                 timestep
                  ):
         self.init_indoor_temerpature = init_indoor_temerpature
         self.min_comfort_temperature = min_comfort_temperature
@@ -186,19 +186,25 @@ class HVAC():
         self.heat_capacity = heat_capacity
         self.outtemp = outtemp
         self.heat_resistance = heat_resistance
-        self.energy_efficiency = a_hvac * max_comfort_temperature
-        self.P_max_hvac = P_max_hvac
-        self.delta_t = delta_t
-        self.now_temperature = self.init_indoor_temerpature
+        self.a_hvac = a_hvac
+        self.energy_efficiency = a_hvac * max_hvac_voltage
+        self.max_hvac_voltage = max_hvac_voltage
+        self.timestep = timestep
+        self.now_temperature = self.init_indoor_tempature
     
-    def calculate(self, a_hvac):
-        # ####################################################################
-        self.energy_efficiency = a_hvac * self.max_comfort_temperature
+    def get_next_step_tempature(self):
+        self.energy_efficiency = self.a_hvac * self.max_hvac_voltage
         next_step_tempature = self.now_temperature - (self.now_temperature - self.outtemp + 
-        self.energy_efficiency * self.heat_resistance * self.heat_capacity) * self.delta_t / (self.heat_capacity * self.heat_resistance)
+        self.energy_efficiency * self.heat_resistance * self.heat_capacity) * self.timestep / (self.heat_capacity * self.heat_resistance)
         return next_step_tempature
     
+    def get_difference(self):
+        return abs(self.now_temperature - self.max_comfort_temperature) + abs(self.min_comfort_temperature - self.now_temperature)
+
+    def get_energy_efficiency(self):
+        return self.energy_efficiency
     """
     thermal_cpmfort_weight is a const int
     hvac_reward = -thermal_cpmfort_weight * (abs(now_tempature - max_temperature) + abs(min_temperature - now_temperature))
     """
+

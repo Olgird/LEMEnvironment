@@ -54,10 +54,28 @@ PROSUMER_INFORMATION = [
     #              inT0, outT0, T_min, T_max, C, R, p_max):
 
 Prosumer1 = {
+    'number' : 1,
     'own_PV' : 1,
     'own_E' : 1,
     'own_EV' : 1,
     'own_SA' : 1,
+    'ES_P_max':P_ES_MAX,
+    'E_ES_min':E_ES_MIN,
+    'E_ES_max' : E_ES_MAX,
+    'E_ES_capcity':E_ES_CAPACITY,
+    'Charge_efficiency_ES':CHARGE_EFFICIENCY_ES,
+    'EV_P_max' : P_EV_MAX,
+    'E_EV_min' :E_EV_MIN,
+    'E_EV_max' : E_EV_MAX,
+    'E_EV_capcity' : E_EV_CAPACITY,
+    'Charge_efficiency_EV' :CHARGE_EFFICIENCY_EV,
+    'P_SA_cyc' : P_CYC_SA,
+    'n_cyc' : N_CYC_SA,
+    'T_min' : T_MIN,
+    'T_max' : T_MAX,
+    'C':HVAC_C,
+    'R':HVAC_R,
+    'p_max':HVAC_P_MAX
     }
 
 

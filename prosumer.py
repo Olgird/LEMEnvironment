@@ -6,7 +6,7 @@ class Prosumer():
                  own_ES,ES_P_max,E_ES_min,E_ES_max,E_ES_capcity,Charge_efficiency_ES,E0_ES,
                  own_EV,EV_P_max,E_EV_min,E_EV_max,E_EV_capcity,Charge_efficiency_EV,E0_EV,EV_dep_arr_Ecom,
                  own_SA,P_SA_cyc,n_cyc,SA_tin_tter,
-                 inT0, outT0, T_min, T_max, C, R, p_max):
+                 inT0, outT0, T_min, T_max, C, R, E, p_max):
         # 为了方便找到对应数据的地址，设置一个id
         self.id_prosumer = id_prosumer
 
@@ -18,7 +18,7 @@ class Prosumer():
 
         self.mySA = SA(own_SA,P_SA_cyc,n_cyc,delta_t,SA_tin_tter)
 
-        self.myHVAC = HVAC(inT0, outT0, T_min, T_max, C, R, p_max, delta_t)
+        self.myHVAC = HVAC(inT0, outT0, T_min, T_max, C, R, p_max, E, delta_t)
         
 
         # 初始化 EMS

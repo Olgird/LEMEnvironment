@@ -1,4 +1,6 @@
 
+DELTA_T = 1
+
 # SA 的参数
 N_CYC_SA = 2
 P_CYC_SA = [0.56,0.63]
@@ -75,7 +77,8 @@ Prosumer1 = {
     'T_max' : T_MAX,
     'C':HVAC_C,
     'R':HVAC_R,
-    'p_max':HVAC_P_MAX
+    'p_max':HVAC_P_MAX,
+    'E' : HVAC_E
     }
 
 

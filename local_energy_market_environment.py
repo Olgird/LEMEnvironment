@@ -1,6 +1,7 @@
 from configs import *
 import copy
 import random
+import pandas as pd
 import prosumer
 
 
@@ -25,6 +26,8 @@ class LEME():
 
         # 对应数据data的第多少行
         self.index = 1
+
+        self.discount = 0.2
 
         self.prosumer_setting = []
 
@@ -106,14 +109,9 @@ class LEME():
             E = self.prosumer_setting[i]['E']
 
 
- # def __init__(self,id_prosumer,delta_t,
-            #      own_PV,
-            #      own_ES,ES_P_max,E_ES_min,E_ES_max,E_ES_capcity,Charge_efficiency_ES,E0_ES,
-            #      own_EV,EV_P_max,E_EV_min,E_EV_max,E_EV_capcity,Charge_efficiency_EV,E0_EV,EV_dep_arr_Ecom,
-            #      own_SA,P_SA_cyc,n_cyc,SA_tin_tter,
-            #      inT0, outT0, T_min, T_max, C, R, E, p_max): 
+
             self.prosumer.append(prosumer(id_prosumer,DELTA_T,
-                                                        own_PV,
+                                            own_PV,
                  own_ES,ES_P_max,E_ES_min,E_ES_max,E_ES_capcity,Charge_efficiency_ES,E0_ES,
                  own_EV,EV_P_max,E_EV_min,E_EV_max,E_EV_capcity,Charge_efficiency_EV,E0_EV,EV_dep_arr_Ecom,
                  own_SA,P_SA_cyc,n_cyc,SA_tin_tter,
@@ -128,12 +126,27 @@ class LEME():
     
 
     def init_data_prosumer(self):
+        for i in range(self.n_prosumer):
+            file = 'data\citylearn_challenge_2022_phase_all\Building_'+ str(i+1)+'.csv'
+            df = pd.read_csv(file)
+            df = df.values.tolist()
+
+            for j in range(len(df)):
+                df[j][7] = df[j][7] * self.discount
+
+            self.data_prosumer.append(df)
 
 
-        return 0
+            
+
+
+
+        
     
     def init_data_weather(self):
+        
 
+        
         return 0
     
     def init_data_price(self):

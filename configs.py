@@ -30,3 +30,27 @@ E0EV = [9 , 1 , [6,12]]
 ECOM = [7.12 , 0.712 , [5.696 ,8.544]]
 
 
+
+# 每个prosumer 的参数
+
+N_PROSUMER = 1
+
+PROSUMER_INFORMATION = [
+
+    ]
+
+    # def __init__(self,id_prosumer,delta_t,
+    #              own_PV,
+    #              own_ES,ES_P_max,E_ES_min,E_ES_max,E_ES_capcity,Charge_efficiency_ES,E0_ES,
+    #              own_EV,EV_P_max,E_EV_min,E_EV_max,E_EV_capcity,Charge_efficiency_EV,E0_EV,EV_dep_arr_Ecom,
+    #              own_SA,P_SA_cyc,n_cyc,SA_tin_tter,
+    #              inT0, outT0, T_min, T_max, C, R, p_max):
+
+Prosumer1 = {
+    'own_PV' : 1,
+    'own_E' : 1,
+    'own_EV' : 1,
+    'own_SA' : 1,
+    }
+
+

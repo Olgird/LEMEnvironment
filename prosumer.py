@@ -24,7 +24,7 @@ class Prosumer():
         # 初始化 EMS
         
         
-    def do_actions(self,t,inverter_ac_power_per_w,a_ES,a_EV,a_SA,a_HVAC,outT):
+    def do_actions(self,t,inverter_ac_power_per_w,outT,a_ES,a_EV,a_SA,a_HVAC):
         
         # 定义多个功率
         p_PV = 0

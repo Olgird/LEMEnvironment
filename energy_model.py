@@ -188,10 +188,11 @@ class HVAC():
         self.heat_resistance = heat_resistance
         self.max_hvac_voltage = max_hvac_voltage
         self.timestep = timestep
-        self.now_temperature = self.init_indoor_temperature
+        self.now_temperature = init_indoor_temperature
     
-    def running_HVAC(self, a_hvac):
+    def running_HVAC(self, a_hvac, outtemp):
         self.energy_efficiency = a_hvac * self.max_hvac_voltage
+        self.outtemp = outtemp
         next_step_tempature = self.now_temperature - (self.now_temperature - self.outtemp + 
         self.energy_efficiency * self.heat_resistance * self.heat_capacity) * self.timestep / (self.heat_capacity * self.heat_resistance)
         self.now_temperature = next_step_tempature
@@ -200,8 +201,8 @@ class HVAC():
     def get_difference(self):
         return (max(self.now_temperature - self.max_comfort_temperature, 0) + max(self.min_comfort_temperature - self.now_temperature, 0))
 
-    def get_energy_efficiency(self, a_hvac, t):
-        return abs(a_hvac) * self.max_hvac_voltage * t
+    def get_energy_efficiency(self, a_hvac):
+        return abs(a_hvac) * self.max_hvac_voltage
     """
     thermal_cpmfort_weight is a const int
     hvac_reward = -thermal_cpmfort_weight * (abs(now_tempature - max_temperature) + abs(min_temperature - now_temperature))

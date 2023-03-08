@@ -27,35 +27,50 @@ class LEME():
         # 对应数据data的第多少行
         self.index = 1
 
-        self.discount = 0.2
+        self.rate_inflexible_load = 0.2
+
+        self.rate_sell_pricing = 0.3
 
         self.prosumer_setting = []
 
         self.prosumer = []
 
+        # 
         self.data_prosumer = []
+        # 
         self.data_weather = []
+        # Electricity Pricing	6h Prediction Electricity Pricing 	12h Prediction Electricity Pricing 	
+        # 24h Prediction Electricity Pricing   Sell Pricing
         self.data_price = []
+
+        self.training_set = []
+        self.validation_set =[]
+        self.n_validation_set = 50
 
         for i in range(Prosumer1['number']):
             t = copy.deepcopy(Prosumer1)
             self.prosumer_setting.append(t)
         
+        # 初始化
+        self.init_data_price()
+        self.init_data_prosumer()
+        self.init_data_weather()
+        self.init_trainning_set()
+
         
-        
-
-
-
-        pass
 
 
 
     def reset(self):
         self.prosumer = []
-           
+
+        # 初始化文件位置
+        self.index = random.choice(self.training_set) * 24 + 1
+        
+        # 初始化每个prosumer
         for i in range(self.n_prosumer):
             
-            id_prosumer = i+1
+            id_prosumer = i
 
             E0_ES = randGauss(E0ES[0],E0ES[1],E0ES[2],1)
             E0_EV = randGauss(E0EV[0],E0EV[1],E0EV[2],1)
@@ -108,6 +123,8 @@ class LEME():
             p_max = self.prosumer_setting[i]['p_max'] 
             E = self.prosumer_setting[i]['E']
 
+            # 读取当前的 室外温度
+            outT0 = self.data_weather[self.index][0]
 
 
             self.prosumer.append(prosumer(id_prosumer,DELTA_T,
@@ -116,6 +133,8 @@ class LEME():
                  own_EV,EV_P_max,E_EV_min,E_EV_max,E_EV_capcity,Charge_efficiency_EV,E0_EV,EV_dep_arr_Ecom,
                  own_SA,P_SA_cyc,n_cyc,SA_tin_tter,
                  inT0, outT0, T_min, T_max, C, R, E, p_max))
+            
+        # 提取每个prosumer的状态 
 
 
         return 0
@@ -132,26 +151,42 @@ class LEME():
             df = df.values.tolist()
 
             for j in range(len(df)):
-                df[j][7] = df[j][7] * self.discount
+                df[j][7] = df[j][7] * self.rate_inflexible_load
 
             self.data_prosumer.append(df)
 
 
             
-
-
-
-        
     
     def init_data_weather(self):
+        file = 'data\citylearn_challenge_2022_phase_all\weather.csv'
+
+        df = pd.read_csv(file)
+        df = df.values.tolist()
+        self.data_weather = df
         
 
         
-        return 0
-    
     def init_data_price(self):
 
-        return 0 
+        file = 'data\citylearn_challenge_2022_phase_all\pricing.csv'
+
+        df = pd.read_csv(file)
+        df = df.values.tolist()
+
+        for i in range(len(df)):
+            df[i].append(df[i][0]*self.rate_sell_pricing)
+
+        self.data_price = df
+
+    
+    def init_trainning_set(self):
+        L = list(range(1,365))
+        random.shuffle(L)
+        self.validation_set = L[:self.n_validation_set]
+        self.training_set = training = L[self.n_validation_set:]
+
+
     
 
     def MMR(self,price_buy,price_sell,P_list):

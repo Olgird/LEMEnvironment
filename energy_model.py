@@ -202,13 +202,13 @@ class HVAC():
         next_step_tempature = self.now_temperature - (self.now_temperature - self.outtemp + 
         self.energy_efficiency * self.heat_resistance * self.hvac_voltage) * self.timestep / (self.heat_capacity * self.heat_resistance)
         self.now_temperature = next_step_tempature
-        return self.hvac_voltage
+
+        return abs(self.hvac_voltage)
     
     def get_difference(self):
         return (max(self.now_temperature - self.max_comfort_temperature, 0) + max(self.min_comfort_temperature - self.now_temperature, 0))
 
-    def get_energy(self, a_hvac):
-        return abs(a_hvac) * self.max_hvac_voltage
+
     """
     thermal_cpmfort_weight is a const int
     hvac_reward = -thermal_cpmfort_weight * (abs(now_tempature - max_temperature) + abs(min_temperature - now_temperature))

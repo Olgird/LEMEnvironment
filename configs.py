@@ -1,6 +1,11 @@
 
 DELTA_T = 1
 
+
+# rate
+PENALTY_COMMUTING = 0.5
+PENALTY_THERMAL = 1
+
 # SA 的参数
 N_CYC_SA = 2
 P_CYC_SA = [0.56,0.63]

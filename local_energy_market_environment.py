@@ -47,6 +47,12 @@ class LEME():
         self.validation_set =[]
         self.n_validation_set = 50
 
+        self.t = 0
+
+        # rate
+        self.penalty_commuting = PENALTY_COMMUTING
+        self.penalty_thermal = PENALTY_THERMAL
+
         for i in range(Prosumer1['number']):
             t = copy.deepcopy(Prosumer1)
             self.prosumer_setting.append(t)
@@ -62,10 +68,12 @@ class LEME():
 
 
     def reset(self):
+        # 清空prosumer 和 时间
         self.prosumer = []
+        self.t = 0
 
         # 初始化文件位置
-        self.index = random.choice(self.training_set) * 24 + 1
+        self.index = random.choice(self.training_set)[0] * 24 + 1
         
         # 初始化每个prosumer
         for i in range(self.n_prosumer):
@@ -134,14 +142,66 @@ class LEME():
                  own_SA,P_SA_cyc,n_cyc,SA_tin_tter,
                  inT0, outT0, T_min, T_max, C, R, E, p_max))
             
-        # 提取每个prosumer的状态 
+        # 提取每个prosumer的状态
+        state = self.get_state()
 
-
-        return 0
+            
+        
+        return state
     
-    def step(self):
+    def step(self,action):
 
-        return 0
+        # 保存结果
+        L_all_p = []
+        L_commuting_error = []
+        L_thermal_error = []
+
+        # 每个prosumer do action 并且把结果保存
+        # action a_hvac [-1,1] a_ES [-1,1] a_EV [-1,1] a_SA {0,1}
+        for i in range(self.n_prosumer):
+            a_hvac,a_ES,a_EV,a_SA = action[i]
+            inverter_ac_power_per_w = self.data_prosumer[i][self.index + self.t][11]
+            outT = self.data_weather[self.index + self.t][0]
+            # def do_actions(self,t,inverter_ac_power_per_w,outT,a_ES,a_EV,a_SA,a_HVAC):
+            all_p,commuting_error,thermal_error =self.prosumer[i].do_actions(self.t,inverter_ac_power_per_w,outT,a_ES,a_EV,a_SA,a_hvac)
+            L_all_p.append(all_p)
+            L_commuting_error.append(commuting_error)
+            L_thermal_error.append(thermal_error)
+    
+        done = False
+        # 时间 ++ 
+        self.t = self.t + 1
+        if self.t == 24:
+            done = True
+
+        # 返回下个时刻的状态
+        _state = self.get_state()
+
+        # 计算 reward 
+        L_reward = []
+        L_penalty_commuting = []
+        L_penalty_thermal = []
+        L_cost = []
+
+        price_buy ,price_sell = self.MMR(L_all_p)
+        
+        
+        for i in range(self.n_prosumer):
+            L_penalty_commuting.append(L_commuting_error[i] * self.penalty_commuting)
+
+            L_penalty_thermal.append(L_thermal_error[i] * self.penalty_thermal)
+            
+            if L_all_p[i] >= 0:
+                L_cost.append(L_all_p[i] * price_buy * DELTA_T)
+            else:
+                L_cost.append(L_all_p[i] * price_sell * DELTA_T)
+
+        for i in range(self.n_prosumer):
+            L_reward.append(-(L_cost[i] + L_penalty_commuting[i] + L_penalty_thermal[i]))
+        
+
+        # 返回 下一个状态 ，reward，done，cost，
+        return _state ,L_reward, done , L_cost,L_penalty_commuting,L_penalty_thermal
     
 
     def init_data_prosumer(self):
@@ -187,13 +247,91 @@ class LEME():
         self.training_set = training = L[self.n_validation_set:]
 
 
-    
+    def get_state(self):
+        state =[]
+        for i in range(self.n_prosumer):
+            p_state = []
 
-    def MMR(self,price_buy,price_sell,P_list):
+            
 
-        price_buy_list = []
-        price_sell_list = []
-        return price_buy_list,price_sell_list
+            # 月
+            p_state.append(self.data_prosumer[i][self.index + self.t][0])
+
+            # 小时
+            p_state.append(self.data_prosumer[i][self.index + self.t][1])
+
+            # 星期
+            p_state.append(self.data_prosumer[i][self.index + self.t][2])
+
+            # 7 inflexible 电量消费
+            for j in range(1,24):
+                p_state.append(self.data_prosumer[i][self.index + self.t - j][7])
+
+            # 价格
+            p_state.append(self.data_price[self.index + self.t][0])
+            p_state.append(self.data_price[self.index + self.t][1])
+            p_state.append(self.data_price[self.index + self.t][4])
+
+            # 温度
+            p_state.append(self.data_weather[self.index + self.t][0])
+            p_state.append(self.prosumer[i].myHVAC.now_temperature)
+
+            # SA
+            p_state.append(self.prosumer[i].mySA.own_SA)
+            p_state.append(self.prosumer[i].mySA.SA_tin_tter[0])
+            p_state.append(self.prosumer[i].mySA.SA_tin_tter[1])
+
+            # EV
+            p_state.append(self.prosumer[i].myEV.own_EV)
+            p_state.append(self.prosumer[i].myEV.A_EV)
+
+            p_state.append(self.prosumer[i].myEV.E_EV)
+
+            # PV 我觉得应该是t-1的
+            p_state.append(self.prosumer[i].myPV.own_PV)
+            p_state.append(self.data_prosumer[i][self.index + self.t - 1][11])
+
+            # ES
+            p_state.append(self.prosumer[i].myES.own_ES)
+            p_state.append(self.prosumer[i].myES.E_ES)
+
+
+            state.append(p_state)
+
+        return state
+
+
+    def MMR(self,P_list):
+        
+        n_P = sum(P_list)
+        buy = self.data_price[self.index + self.t][0]
+        sell = self.data_price[self.index + self.t][4]
+        mid_price = (buy + sell) / 2
+
+        nc_P = 0
+        ng_P = 0
+        for i in range(self.n_prosumer):
+            if n_P[i] > 0 :
+                nc_P += n_P[i]
+            else:
+                ng_P +=n_P[i]
+                
+
+
+
+        if n_P == 0:
+            price_buy = mid_price
+            price_sell = mid_price
+        elif n_P > 0:
+            price_buy = (mid_price * abs(ng_P) + buy * n_P)/nc_P 
+            price_sell = mid_price
+        elif n_P < 0:
+            price_buy = mid_price
+            price_sell = (mid_price * nc_P + sell * abs(n_P)) / abs(ng_P)
+
+
+
+        return price_buy ,price_sell
 
     
 

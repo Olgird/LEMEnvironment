@@ -14,6 +14,7 @@ class PV():
     def get_generation(self,inverter_ac_power_per_w):
         inverter_ac_power_per_kw = inverter_ac_power_per_w / 1000
         # 乘了own 如果own为0 的话就代表不存在own
+        # 返回负数
         return (-inverter_ac_power_per_kw) * self.own_PV
     
 class ES():
@@ -80,24 +81,24 @@ class EV():
         self.E_EV = E0_EV
         self.delta_t = delta_t
         self.EV_dep_arr_Ecom = EV_dep_arr_Ecom
+
+        self.A_EV = 1
         
     def EV_charge(self,a_EV,t):
 
-        A_EV = 1
-
-        # 如果在外面的话A_EV 为 0 表示不能充放电
+        # 如果在外面的话self.A_EV 为 0 表示不能充放电
         for dep,arr,Ecom in self.EV_dep_arr_Ecom:
             if t>=dep and t<= arr:
-                A_EV = 0 
+                self.A_EV = 0 
         if a_EV >=0:
-            P_EV_charge =A_EV * (min(a_EV*self.P_max ,(self.E_EV_max-self.E_EV)/(self.Charge_efficiency_EV * self.delta_t)))
+            P_EV_charge =self.A_EV * (min(a_EV*self.P_max ,(self.E_EV_max-self.E_EV)/(self.Charge_efficiency_EV * self.delta_t)))
 
             # 充电放电改变电量
             self.E_EV = self.E_EV + self.delta_t * P_EV_charge *self.Charge_efficiency_EV
 
             return P_EV_charge * self.own_EV
         else:
-            P_EV_discharge =A_EV * max(a_EV*self.P_max ,(self.E_EV_min-self.E_EV)*self.Charge_efficiency_EV /( self.delta_t))
+            P_EV_discharge =self.A_EV * max(a_EV*self.P_max ,(self.E_EV_min-self.E_EV)*self.Charge_efficiency_EV /( self.delta_t))
             # 放电改变电量
             self.E_EV = self.E_EV + self.delta_t * P_EV_discharge / self.Charge_efficiency_EV
 
@@ -113,6 +114,7 @@ class EV():
                 self.E_EV = max(0,self.E_EV - Ecom)
             # 如果出勤不够电，那就返回惩罚
             if t == dep:
+                self.A_EV = 1
                 return min(self.E_EV - Ecom,0) * self.own_EV
         
         return 0
@@ -135,17 +137,20 @@ class SA():
         # 记录激活的时间
         self.t_activate = -1
 
+        # A
+        self.A_SA = 0
+
     def running_SA(self,t,a_SA):
-        A_SA = 0
+        self.A_SA = 0
 
         tin = self.SA_tin_tter[0]
         tter = self.SA_tin_tter[1]
 
         if t>=tin and t<=(tter - self.n_cyc):
-            A_SA = 1
+            self.A_SA = 1
 
         # 如果还没有激活，并且a_SA ==1
-        if A_SA == 1 and a_SA == 1 and self.t_activate == -1:
+        if self.A_SA == 1 and a_SA == 1 and self.t_activate == -1:
             self.t_activate = t
 
         # 如果在截止时间到达还没激活，那就直接激活

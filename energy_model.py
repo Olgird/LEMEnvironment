@@ -185,7 +185,7 @@ class HVAC():
                  heat_resistance, max_hvac_voltage, energy_efficiency,
                  timestep
                  ):
-        self.init_indoor_temerpature = init_indoor_temperature
+    
         self.min_comfort_temperature = min_comfort_temperature
         self.max_comfort_temperature = max_comfort_temperature
         self.heat_capacity = heat_capacity
@@ -195,13 +195,17 @@ class HVAC():
         self.energy_efficiency = energy_efficiency
         self.timestep = timestep
         self.now_temperature = init_indoor_temperature
+
+
+
+
     
     def running_HVAC(self, a_hvac, outtemp):
         self.hvac_voltage = a_hvac * self.max_hvac_voltage
         self.outtemp = outtemp
-        next_step_tempature = self.now_temperature - (self.now_temperature - self.outtemp + 
-        self.energy_efficiency * self.heat_resistance * self.hvac_voltage) * self.timestep / (self.heat_capacity * self.heat_resistance)
+        next_step_tempature = self.now_temperature - (self.now_temperature - self.outtemp + self.energy_efficiency * self.heat_resistance * self.hvac_voltage) * self.timestep / (self.heat_capacity * self.heat_resistance)
         self.now_temperature = next_step_tempature
+
 
         return abs(self.hvac_voltage)
     

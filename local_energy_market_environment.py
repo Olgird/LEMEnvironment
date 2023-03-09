@@ -135,6 +135,8 @@ class LEME():
             # 读取当前的 室外温度
             outT0 = self.data_weather[self.index][0]
 
+            
+
             p = prosumer.Prosumer(id_prosumer,DELTA_T,
                                             own_PV,
                  own_ES,ES_P_max,E_ES_min,E_ES_max,E_ES_capcity,Charge_efficiency_ES,E0_ES,
@@ -163,6 +165,10 @@ class LEME():
             a_hvac,a_ES,a_EV,a_SA = action[i]
             inverter_ac_power_per_w = self.data_prosumer[i][self.index + self.t][11]
             outT = self.data_weather[self.index + self.t][0]
+
+            # 
+            outT = C_to_F(outT)
+            
             # def do_actions(self,t,inverter_ac_power_per_w,outT,a_ES,a_EV,a_SA,a_HVAC):
             all_p,commuting_error,thermal_error =self.prosumer[i].do_actions(self.t,inverter_ac_power_per_w,outT,a_ES,a_EV,a_SA,a_hvac)
             

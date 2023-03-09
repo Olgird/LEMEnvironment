@@ -73,7 +73,8 @@ class LEME():
         self.t = 0
 
         # 初始化文件位置
-        self.index = random.choice(self.training_set)[0] * 24 + 1
+        # print(self.training_set)
+        self.index = int(random.choice(self.training_set) * 24 + 1)
         
         # 初始化每个prosumer
         for i in range(self.n_prosumer):
@@ -87,7 +88,7 @@ class LEME():
             arr = randGauss(TARR[0],TARR[1],TARR[2],0)
             Ecom = randGauss(ECOM[0],ECOM[1],ECOM[2],2)
             # 时间是整数
-            EV_dep_arr_Ecom = [int(dep),int(arr),Ecom]
+            EV_dep_arr_Ecom = [[int(dep),int(arr),Ecom]]
 
             # 时间是整数
             tter = randGauss(TTER[0],TTER[1],TTER[2],0)
@@ -134,13 +135,13 @@ class LEME():
             # 读取当前的 室外温度
             outT0 = self.data_weather[self.index][0]
 
-
-            self.prosumer.append(prosumer(id_prosumer,DELTA_T,
+            p = prosumer.Prosumer(id_prosumer,DELTA_T,
                                             own_PV,
                  own_ES,ES_P_max,E_ES_min,E_ES_max,E_ES_capcity,Charge_efficiency_ES,E0_ES,
                  own_EV,EV_P_max,E_EV_min,E_EV_max,E_EV_capcity,Charge_efficiency_EV,E0_EV,EV_dep_arr_Ecom,
                  own_SA,P_SA_cyc,n_cyc,SA_tin_tter,
-                 inT0, outT0, T_min, T_max, C, R, E, p_max))
+                 inT0, outT0, T_min, T_max, C, R, E, p_max)
+            self.prosumer.append(p)
             
         # 提取每个prosumer的状态
         state = self.get_state()
@@ -164,7 +165,9 @@ class LEME():
             outT = self.data_weather[self.index + self.t][0]
             # def do_actions(self,t,inverter_ac_power_per_w,outT,a_ES,a_EV,a_SA,a_HVAC):
             all_p,commuting_error,thermal_error =self.prosumer[i].do_actions(self.t,inverter_ac_power_per_w,outT,a_ES,a_EV,a_SA,a_hvac)
-            L_all_p.append(all_p)
+            
+            # 
+            L_all_p.append(all_p + self.data_prosumer[i][self.index + self.t][7])
             L_commuting_error.append(commuting_error)
             L_thermal_error.append(thermal_error)
     
@@ -244,7 +247,7 @@ class LEME():
         L = list(range(1,365))
         random.shuffle(L)
         self.validation_set = L[:self.n_validation_set]
-        self.training_set = training = L[self.n_validation_set:]
+        self.training_set = L[self.n_validation_set:]
 
 
     def get_state(self):
@@ -273,7 +276,7 @@ class LEME():
             p_state.append(self.data_price[self.index + self.t][4])
 
             # 温度
-            p_state.append(self.data_weather[self.index + self.t][0])
+            p_state.append(C_to_F(self.data_weather[self.index + self.t][0]))
             p_state.append(self.prosumer[i].myHVAC.now_temperature)
 
             # SA
@@ -310,11 +313,12 @@ class LEME():
 
         nc_P = 0
         ng_P = 0
+        # 计算nc_P ng_P
         for i in range(self.n_prosumer):
-            if n_P[i] > 0 :
-                nc_P += n_P[i]
+            if P_list[i] > 0 :
+                nc_P += P_list[i]
             else:
-                ng_P +=n_P[i]
+                ng_P +=P_list[i]
                 
 
 
@@ -329,7 +333,8 @@ class LEME():
             price_buy = mid_price
             price_sell = (mid_price * nc_P + sell * abs(n_P)) / abs(ng_P)
 
-
+        print('price:')
+        print(price_buy ,price_sell)
 
         return price_buy ,price_sell
 

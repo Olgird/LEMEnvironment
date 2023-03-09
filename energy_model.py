@@ -202,7 +202,7 @@ class HVAC():
         next_step_tempature = self.now_temperature - (self.now_temperature - self.outtemp + 
         self.energy_efficiency * self.heat_resistance * self.hvac_voltage) * self.timestep / (self.heat_capacity * self.heat_resistance)
         self.now_temperature = next_step_tempature
-        return next_step_tempature
+        return self.hvac_voltage
     
     def get_difference(self):
         return (max(self.now_temperature - self.max_comfort_temperature, 0) + max(self.min_comfort_temperature - self.now_temperature, 0))

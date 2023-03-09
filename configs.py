@@ -63,7 +63,7 @@ PROSUMER_INFORMATION = [
 Prosumer1 = {
     'number' : 1,
     'own_PV' : 1,
-    'own_E' : 1,
+    'own_ES' : 1,
     'own_EV' : 1,
     'own_SA' : 1,
     'ES_P_max':P_ES_MAX,

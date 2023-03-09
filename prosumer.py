@@ -34,7 +34,8 @@ class Prosumer():
         p_HVAC = 0
 
         # 做动作，得到每个部件的功率
-        p_PV = self.myPV(inverter_ac_power_per_w)
+        p_PV = self.myPV.get_generation(inverter_ac_power_per_w)
+        
         p_ES = self.myES.ES_Charge(a_ES)
         p_EV = self.myEV.EV_charge(a_EV,t)
         p_SA = self.mySA.running_SA(t,a_SA)
@@ -46,6 +47,9 @@ class Prosumer():
 
         # 计算单个prosumer的全部功率之和
         all_p = p_PV + p_ES + p_EV + p_SA + p_HVAC
+
+        print('P:')
+        print(p_PV , p_ES , p_EV , p_SA , p_HVAC)
 
         return all_p,commuting_error,thermal_error
 

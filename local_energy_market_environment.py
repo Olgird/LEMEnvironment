@@ -153,6 +153,9 @@ class LEME():
         return state
     
     def step(self,action):
+        action = self.action_turn(action)
+        
+        
 
         # 保存结果
         L_all_p = []
@@ -250,7 +253,7 @@ class LEME():
 
     
     def init_trainning_set(self):
-        L = list(range(1,365))
+        L = list(range(1,364))
         random.shuffle(L)
         self.validation_set = L[:self.n_validation_set]
         self.training_set = L[self.n_validation_set:]
@@ -339,10 +342,35 @@ class LEME():
             price_buy = mid_price
             price_sell = (mid_price * nc_P + sell * abs(n_P)) / abs(ng_P)
 
-        print('price:')
-        print(price_buy ,price_sell)
+        
 
         return price_buy ,price_sell
 
     
+    def action_turn(self,action):
+        # action a_hvac [-1,1] a_ES [-1,1] a_EV [-1,1] a_SA {0,1}
+        ret = []
+        for j in range(self.n_prosumer):
+            ans = []
+            
+            # action a_hvac [-1,1] a_ES [-1,1] a_EV [-1,1]
+            for i in range(3):
 
+                if action[j][i] > 1:
+                    ans.append(1)
+                elif action[j][i] < -1:
+                    ans.append(-1)
+                else:
+                    ans.append(action[j][i])
+
+            # a_SA {0,1}
+            if action[j][3] > 0:
+                ans.append(1)
+            else:
+                ans.append(0)
+            
+            ret.append(ans)
+
+        return ret
+
+        

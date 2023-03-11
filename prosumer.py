@@ -48,8 +48,7 @@ class Prosumer():
         # 计算单个prosumer的全部功率之和
         all_p = p_PV + p_ES + p_EV + p_SA + p_HVAC
 
-        print('P:')
-        print(p_PV , p_ES , p_EV , p_SA , p_HVAC)
+        
 
         return all_p,commuting_error,thermal_error
 

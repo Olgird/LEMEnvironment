@@ -85,16 +85,28 @@ class EV():
         self.A_EV = 1
         
     def EV_charge(self,a_EV,t):
+        
+        self.A_EV = 1
 
         # 如果在外面的话self.A_EV 为 0 表示不能充放电
+
         for dep,arr,Ecom in self.EV_dep_arr_Ecom:
             if t>=dep and t<= arr:
                 self.A_EV = 0 
-        if a_EV >=0:
-            P_EV_charge =self.A_EV * (min(a_EV*self.P_max ,(self.E_EV_max-self.E_EV)/(self.Charge_efficiency_EV * self.delta_t)))
+            
 
+        if a_EV >=0:
+
+            # print(a_EV)
+
+            P_EV_charge = self.A_EV * (min(a_EV*self.P_max ,(self.E_EV_max-self.E_EV)/(self.Charge_efficiency_EV * self.delta_t)))
+
+            # print('p')
+            # print(P_EV_charge)
             # 充电放电改变电量
             self.E_EV = self.E_EV + self.delta_t * P_EV_charge *self.Charge_efficiency_EV
+
+            # print(self.own_EV)
 
             return P_EV_charge * self.own_EV
         else:
@@ -110,12 +122,15 @@ class EV():
     def EV_commuting(self,t):
         for dep,arr,Ecom in self.EV_dep_arr_Ecom:
             # 如果汽车开回来，电量减少, 如果低于0，电量设置成0
-            if t == arr:
-                self.E_EV = max(0,self.E_EV - Ecom)
+            # if t == arr:
+                # self.E_EV = max(0,self.E_EV - Ecom)
             # 如果出勤不够电，那就返回惩罚
             if t == dep:
                 self.A_EV = 1
-                return min(self.E_EV - Ecom,0) * self.own_EV
+
+                # print(self.E_EV - Ecom)
+                self.E_EV = max(0,self.E_EV - Ecom)
+                return -min(self.E_EV - Ecom,0) * self.own_EV
         
         return 0
 

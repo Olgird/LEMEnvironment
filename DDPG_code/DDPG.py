@@ -10,8 +10,8 @@ device = T.device("cuda:0" if T.cuda.is_available() else "cpu")
 class DDPG:
     def __init__(self, alpha, beta, state_dim, action_dim, actor_fc1_dim,
                  actor_fc2_dim, critic_fc1_dim, critic_fc2_dim, ckpt_dir,
-                 gamma=0.99, tau=0.005, action_noise=0.1, max_size=1000000,
-                 batch_size=256):
+                 gamma=0.99, tau=0.003, action_noise=0.5, max_size=10000,
+                 batch_size=32):
         self.gamma = gamma
         self.tau = tau
         self.action_noise = action_noise

@@ -276,7 +276,8 @@ class LEME():
             p_state.append(self.data_prosumer[i][self.index + self.t][2])
 
             # 7 inflexible 电量消费
-            for j in range(1,24):
+            # for j in range(1,24):
+            for j in range(1,2):
                 p_state.append(self.data_prosumer[i][self.index + self.t - j][7])
 
             # 价格
